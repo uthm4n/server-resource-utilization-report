@@ -69,7 +69,7 @@ class ServerResourceUsageSummaryReportProvider extends AbstractReportProvider{
 	@Override
 	ContentSecurityPolicy getContentSecurityPolicy() {
 		def csp = new ContentSecurityPolicy()
-		csp.scriptSrc = '*.jsdelivr.net/*'
+		csp.scriptSrc = 'https://cdn.jsdelivr.net'
 		csp.frameSrc = '*.digitalocean.com'
 		csp.imgSrc = '*.wikimedia.org'
 		csp.styleSrc = 'https: *.bootstrapcdn.com'
