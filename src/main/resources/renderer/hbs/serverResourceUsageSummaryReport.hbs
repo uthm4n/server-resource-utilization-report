@@ -1,0 +1,78 @@
+<div class="server-resource-stats">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .chart-container {
+            width: 600px;
+            height: 400px;
+            margin: 20px auto;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</div>
+
+<h2>Results:</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Account ID</th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Used CPU</th>
+                <th>Used Memory</th>
+                <th>Used Storage</th>
+                <th>Last Stats</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each main}}
+            <tr>
+                <td>{{dataMap.account_id}}</td>
+                <td>{{dataMap.id}}</td>
+                <td>{{dataMap.name}}</td>
+                <td>{{dataMap.used_cpu}}</td>
+                <td>{{dataMap.used_memory}}</td>
+                <td>{{dataMap.used_storage}}</td>
+                <td>{{dataMap.last_stats}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+
+    <div class="chart-container">
+        <canvas id="cpuChart"></canvas>
+    </div>
+
+    <script>
+        // Extract CPU data 
+        var cpuData = [];
+        {{#each main}}
+        cpuData.push({{used_cpu}});
+        {{/each}}
+
+        // Chart.js configuration
+        var ctx = document.getElementById('cpuChart').getContext('2d');
+        var cpuChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from(Array(cpuData.length).keys()).map(String),
+                datasets: [{
+                    label: 'Used CPU',
+                    data: cpuData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+    </script>
