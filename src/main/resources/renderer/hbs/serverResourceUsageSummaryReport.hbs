@@ -2,38 +2,6 @@
     <!-- External script with nonce -->
     <script nonce="{{webnonce}}" type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Internal script with nonce -->
-    <script nonce="{{webnonce}}" type="text/javascript">
-        document.addEventListener("DOMContentLoaded", function() {
-            var cpuData = [];
-            {{#each main}}
-            cpuData.push({{used_cpu}});
-            {{/each}}
-
-            var ctx = document.getElementById('cpuChart').getContext('2d');
-            var cpuChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Array.from(Array(cpuData.length).keys()).map(String),
-                    datasets: [{
-                        label: 'Used CPU',
-                        data: cpuData,
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        });
-    </script>
-
     <!-- Style block moved out of the script tags -->
     <style>
         body {
@@ -93,4 +61,36 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Internal script with nonce -->
+    <script nonce="{{webnonce}}" type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function() {
+            var cpuData = [];
+            {{#each main}}
+            cpuData.push({{dataMap.used_cpu}});
+            {{/each}}
+
+            var ctx = document.getElementById('cpuChart').getContext('2d');
+            var cpuChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Array.from(Array(cpuData.length).keys()).map(String),
+                    datasets: [{
+                        label: 'Used CPU',
+                        data: cpuData,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 </div>

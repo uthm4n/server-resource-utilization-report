@@ -91,8 +91,6 @@ class ServerResourceUsageSummaryReportProvider extends AbstractReportProvider{
 				String dateTimeQuery = "DATE_SUB(NOW(), INTERVAL ${timeInterval} DAY)"
 
 				results = new Sql(dbConnection).rows("SELECT account_id, id, name, used_cpu, used_memory, used_storage, last_stats FROM compute_server WHERE last_updated <= NOW() OR ${dateTimeQuery} LIMIT 10;")
-			} else {
-				results = new Sql(dbConnection).rows("SELECT id,name,status from instance order by name asc;")
 			}
 		} finally {
 			if(dbConnection){
