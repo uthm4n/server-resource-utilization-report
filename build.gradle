@@ -72,15 +72,15 @@ sourceSets {
 jar {
 	manifest {
 		attributes(
-				'Plugin-Class': 'com.uthman.ServerResourceUsageSummaryPlugin',
+				'Plugin-Class': 'com.morpheusdata.uthman.ServerResourceUtilReportPlugin',
 				'Plugin-Version': version,
-				'Morpheus-Name': 'Server Resource Usage Summary',
+				'Morpheus-Name': 'Server Resource Utilization Report',
 				'Morpheus-Organization': 'morpheus',
-				'Morpheus-Code': 'server-resource-usage-summary-report',
-				'Morpheus-Description': 'TODO: Fill in the Plugin Description',
+				'Morpheus-Code': 'server-resource-utilization-report',
+				'Morpheus-Description': 'A new report type outlining the resource utilization of all servers over a configurable period of time',
 				'Morpheus-Logo': 'assets/morpheus.svg',
 				'Morpheus-Logo-Dark': 'assets/morpheus.svg',
-				'Morpheus-Labels': 'Plugin',
+				'Morpheus-Labels': 'Plugin, Report, Servers',
 				'Morpheus-Repo': 'https://github.com/gomorpheus/example',
 				'Morpheus-Min-Appliance-Version': "6.3.0"
 		)

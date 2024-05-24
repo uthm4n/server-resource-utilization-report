@@ -1,96 +1,34 @@
-<div class="server-resource-stats">
-    <!-- External script with nonce -->
-    <script nonce="{{webnonce}}" type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Style block moved out of the script tags -->
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        .chart-container {
-            width: 600px;
-            height: 400px;
-            margin: 20px auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-    </style>
-
-    <div class="chart-container">
-        <canvas id="cpuChart"></canvas>
-    </div>
-
-    <div class="results-table">
-        <h2>Results:</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Account ID</th>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Used CPU</th>
-                    <th>Used Memory</th>
-                    <th>Used Storage</th>
-                    <th>Last Stats</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each main}}
-                <tr>
-                    <td>{{dataMap.account_id}}</td>
-                    <td>{{dataMap.id}}</td>
-                    <td>{{dataMap.name}}</td>
-                    <td>{{dataMap.used_cpu}}</td>
-                    <td>{{dataMap.used_memory}}</td>
-                    <td>{{dataMap.used_storage}}</td>
-                    <td>{{dataMap.last_stats}}</td>
-                </tr>
-                {{/each}}
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Internal script with nonce -->
-    <script nonce="{{webnonce}}" type="text/javascript">
-        document.addEventListener("DOMContentLoaded", function() {
-            var cpuData = [];
-            {{#each main}}
-            cpuData.push({{dataMap.used_cpu}});
-            {{/each}}
-
-            var ctx = document.getElementById('cpuChart').getContext('2d');
-            var cpuChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Array.from(Array(cpuData.length).keys()).map(String),
-                    datasets: [{
-                        label: 'Used CPU',
-                        data: cpuData,
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        });
-    </script>
+<div class="server-resource-utilization-report">
+  <title>Server Resource Utilization Report</title>
+  <script nonce="{{webnonce}}" type="text/javascript" src="https://cdn.jsdelivr.net/npm/handlebars@4.7.7/dist/handlebars.min.js"></script>
+  <script nonce="{{webnonce}}" type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js">
+    var inputData = '{{ reportdata.header.0.dataMap }}'
+    data = inputData.replace(/&quot;/g, '"')
+    var data = JSON.parse(inputData)
+    console.log(data)
+  </script>
+    <table class="resultsTable">
+      <thead>
+        <tr>
+          <th>Account ID</th>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Used Storage</th>
+          <th>Used CPU</th>
+          <th>Used Memory</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each rows}}
+        <tr>
+          <td>{{this.account_id}}</td>
+          <td>{{this.id}}</td>
+          <td>{{this.name}}</td>
+          <td>{{this.usedStorage}}</td>
+          <td>{{this.usedCpu}}</td>
+          <td>{{this.usedMemory}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
 </div>

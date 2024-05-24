@@ -13,21 +13,22 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.uthman
+package com.morpheusdata.uthman
 
 import com.morpheusdata.core.Plugin
 
-class ServerResourceUsageSummaryPlugin extends Plugin {
+class ServerResourceUtilReportPlugin extends Plugin {
 
     @Override
     String getCode() {
-        return 'server-resource-usage-summary-report'
+        return 'server-resource-utilization-report-plugin'
     }
 
     @Override
     void initialize() {
-        this.setName("Server Resource Usage Summary")
-        this.registerProvider(new ServerResourceUsageSummaryReportProvider(this,this.morpheus))
+        this.setName("Server Resource Utilization Report Plugin")
+        this.registerProvider(new ServerResourceUtilReportProvider(this,this.morpheus))
+        this.registerProvider(new ServerResourceUtilReportDatasetProvider(this, this.morpheus))
         
     }
 
