@@ -97,6 +97,16 @@ task(console, dependsOn: 'classes', type: JavaExec) {
 	classpath = sourceSets.main.compileClasspath + sourceSets.main.runtimeClasspath
 }
 
+dependencies {
+    testImplementation 'org.spockframework:spock-core:2.0-groovy-3.0'
+    testImplementation 'org.codehaus.groovy:groovy-all:3.0.9'
+}
+
+task groovyConsole(type: JavaExec) {
+    main = 'groovy.ui.Console'
+    classpath = sourceSets.main.compileClasspath + sourceSets.test.runtimeClasspath
+}
+
 test {
 	testLogging {
 		exceptionFormat = 'full'

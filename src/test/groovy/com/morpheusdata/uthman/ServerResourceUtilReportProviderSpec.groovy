@@ -11,8 +11,6 @@ import spock.lang.Subject
 import groovy.json.*
 import groovy.json.JsonOutput
 
-def reportMock = new ServerResourceUtilReportProviderMock()
-
 class ServerResourceUtilReportProviderSpec extends Specification {
     @Subject 
     ServerResourceUtilReportProvider service 
