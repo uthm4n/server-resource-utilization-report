@@ -4,7 +4,7 @@ import com.morpheusdata.core.AbstractReportProvider
 import com.morpheusdata.core.MorpheusContext
 import com.morpheusdata.core.Plugin
 import com.morpheusdata.model.OptionType
-import com.morpheusdata.uthman.ServerResourceUtilReportDatasetProvider
+import com.morpheusdata.uthman.util.DateTimeUtils
 import com.morpheusdata.model.ReportResult
 import com.morpheusdata.model.ReportResultRow
 import com.morpheusdata.response.ServiceResponse
@@ -12,19 +12,10 @@ import com.morpheusdata.core.util.HttpApiClient.RequestOptions
 import com.morpheusdata.core.util.HttpApiClient
 import com.morpheusdata.views.HTMLResponse
 import com.morpheusdata.views.ViewModel
-import com.morpheusdata.core.util.MorpheusUtils
 import com.morpheusdata.model.ContentSecurityPolicy
-import groovy.sql.GroovyRowResult
 import com.morpheusdata.core.util.MorpheusUtils
-import java.time.LocalDateTime 
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
-import groovy.sql.Sql
 import io.reactivex.rxjava3.core.Observable
 import groovy.util.logging.Slf4j
-import java.util.Date
-
-import java.sql.Connection
 
 @Slf4j
 class ServerResourceUtilReportProvider extends AbstractReportProvider{
@@ -86,36 +77,35 @@ class ServerResourceUtilReportProvider extends AbstractReportProvider{
 
 	@Override
 	void process(ReportResult reportResult) {
-
 		morpheus.async.report.updateReportResultStatus(reportResult,ReportResult.Status.generating).blockingAwait();
-		Connection dbConnection
 		Long displayOrder = 0
-		List<GroovyRowResult> results = []
-		Map elasticQuery = getElasticSearchQuery()
-		List serverResourceData = []
+		def elasticApiResults = null
+		Map elasticQuery = getElasticQuery()
 
 		try {
 
-			def timeInterval = reportResult.configMap?.timePeriodFilter
+			String timeInterval = reportResult.configMap?.timePeriodFilter
 			if (timeInterval) {
-				elasticQuery.query.bool.filter.range.lastUpdated.lte = getCurrentTime()
-				elasticQuery.query.bool.filter.range.lastUpdated.gte = getDateTimeRef(timeInterval)
-				serverResourceData << getDataFromElastic(elasticQuery)
+				def currentDateTime = DateTimeUtils.getCurrentDateTime(true)
+				def timeIntervalDateTime = DateTimeUtils.getDateTimeRef(timeInterval)
+				updateElasticQuery(elasticQuery, "query.bool.filter.range.lastUpdated.lte", "${currentDateTime}")
+				def updatedQuery = updateElasticQuery(elasticQuery, "query.bool.filter.range.lastUpdated.gte", "${timeIntervalDateTime}")
 				log.info("Elastic Query: ${elasticQuery}")
+				elasticApiResults = getElasticResponse(updatedQuery)
+				log.debug("Elastic response: ${elasticApiResults}")
 			}
-				results = getDataFromElastic(elasticQuery)
 		} catch (Exception e) {
-			log.error("error getting data from elastic: ${e} // results: ${results}")
+			log.error("error getting data from elastic: ${e} // results: ${elasticApiResults}")
 		}
 		
-	    log.info("Results: ${results}")
-		Observable<GroovyRowResult> observable = Observable.fromIterable(results) as Observable<GroovyRowResult>
+	    log.info("Results: ${elasticApiResults}")
+		Observable<List> observable = Observable.fromIterable(elasticApiResults) as Observable<List>
 	    observable.map{ resultRow ->
 		
 		log.info("Mapping resultRow ${resultRow}")
-		Map<Object,Object> data = [account_id: resultRow._source.account.id, id:resultRow._id, name: resultRow._source.name, usedStorage: resultRow._source.used_storage, usedCpu: resultRow._source.used_cpu, usedMemory: resultRow._source.used_memory] 
+		Map<String,Object> data = [id: resultRow.id, account_id: resultRow.account_id, name: resultRow.name, used_storage: resultRow.usedStorage, used_cpu: resultRow.usedCpu, used_memory: resultRow.usedMemory] 
 		ReportResultRow resultRowRecord = new ReportResultRow(section: ReportResultRow.SECTION_MAIN, displayOrder: displayOrder++, dataMap: data)
-			log.info("resultRowRecord: ${resultRowRecord}")
+			log.info("resultRowRecord: ${resultRowRecord.getProperties()}")
 	           return resultRowRecord
 	       }.buffer(50).doOnComplete {
 	           morpheus.async.report.updateReportResultStatus(reportResult,ReportResult.Status.ready).blockingAwait();
@@ -154,77 +144,94 @@ class ServerResourceUtilReportProvider extends AbstractReportProvider{
 
 	@Override
 	List<OptionType> getOptionTypes() {
-		[ new OptionType (
-                name: 'Time Period',
-                code: 'time-period-filter',
-				fieldContext: 'config.customOptions',
-                fieldName: 'timePeriodFilter',
-                displayOrder: 1,
-                fieldLabel: 'Time Period Filter',
-                helpText: 'select a time filter to look back: now, 30-days, 60-days, 90-days',
-                required: true,
-                inputType: OptionType.InputType.SELECT,
-				optionSource: 'serverResourceUtilReport.timePeriodSelector'
-            )
+		[
+				new OptionType (
+					name: 'Time Period',
+					code: 'time-period-filter',
+					fieldContext: 'config.customOptions',
+					fieldName: 'timePeriodFilter',
+					displayOrder: 1,
+					fieldLabel: 'Time Period Filter',
+					helpText: 'Select a time period to look at historical data',
+					required: true,
+					inputType: OptionType.InputType.SELECT,
+					optionSource: 'serverResourceUtilReport.timePeriodSelector'
+            	),
+				new OptionType (
+						name: 'Debugger',
+						code: 'report-debugger',
+						fieldContext: 'config.customOptions',
+						fieldName: 'debugger',
+						displayOrder: 2,
+						fieldLabel: 'Debugger',
+						dependsOn: 'timePeriodFilter',
+						defaultValue: """ [ DEBUG ]
+								
+								getCurrentTime: ${DateTimeUtils.getCurrentDateTime(true)}
+
+								getDateTimeRef: ${DateTimeUtils.getDateTimeRef("60DAYSAGO")}
+						getDateTimeRef(90DAYS): ${DateTimeUtils.getDateTimeRef('90DAYSAGO')}
+									
+										Plugin: ${this.getPlugin()}
+							   Plugin settings: ${this.getPlugin().settings}
+							   		Properties: ${this.getPlugin().properties}	
+				
+									morpheus context props: ${this.morpheusContext.properties}
+											morpheus props: ${this.morpheus.properties}
+											morpheus props: ${ServerResourceUtilReportProvider.properties}
+				
+						""",
+						helpText: 'Debugging',
+						required: false,
+						inputType: OptionType.InputType.CODE_EDITOR,
+				)
 		]
 	}
 
-	public static String getCurrentTime() {
-		def now = LocalDateTime.now()
-		def formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
-		def currentDateTime = now.format(formatter) 
-
-		return currentDateTime
-	}
-
-	public static String getDateTimeRef(String timeInterval) {
-		def formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss") 
-		switch(timeInterval) {
-			case "90DAYS":
-				def now = getCurrentTime()
-				def ninetyDayInterval = now.minus(90, ChronoUnit.DAYS)
-				def dateTimeRef = ninetyDayInterval.format(formatter)
-			return dateTimeRef
-				break
-			
-			case "60DAYS":
-				def now = getCurrentTime()
-				def sixtyDayInterval = now.minus(60, ChronoUnit.DAYS)
-				def dateTimeRef = sixtyDayInterval.format(formatter)
-			return dateTimeRef
-				break
-			
-			case "30DAYS":
-				def now = getCurrentTime()
-				def thirtyDayInterval = now.minus(30, ChronoUnit.DAYS)
-				def dateTimeRef = thirtyDayInterval.format(formatter)
-			return dateTimeRef
-				break
-		}
-	}
-
-	public static Map getElasticSearchQuery() {
+	public static Map getElasticQuery() {
 		def query = """{"query":{"bool":{"must":[],"filter":[{"bool":{"filter":[{"bool":{"should":[{"exists":{"field":"serverType"}}],"minimum_should_match":1}},{"bool":{"should":[{"exists":{"field":"usedCpu"}}],"minimum_should_match":1}},{"bool":{"should":[{"exists":{"field":"usedMemory"}}],"minimum_should_match":1}},{"bool":{"should":[{"exists":{"field":"usedStorage"}}],"minimum_should_match":1}}]}},{"range":{"lastUpdated":{"format":"strict_date_optional_time","gte":"2024-04-23","lte":"2024-05-22T23:00:00"}}}],"should":[],"must_not":[]}},"_source":["_id","name","account","usedCpu","usedMemory","usedStorage"]}"""
 		try {
 			query = MorpheusUtils.getJson(query)
 		} catch (Exception e) {
-			log.error("Failed to convert Elasticsearch Query: ${query}")
+			log.debug([success: false, error: "Failed to convert Elasticsearch query into Map: ${query}, exception: ${e}"] as String)
 		}
-		return query
+		return query as Map
 	}
 
-	def getDataFromElastic(Map requestBody) {
+	public static Map updateElasticQuery(Map elasticQuery, String path, Object updatedValue) {
+		if (elasticQuery && path && updatedValue) {
+			def keys = path.tokenize('.')
+			def current = elasticQuery
+			for (int i = 0; i < keys.size() - 1; i++) { current = current[keys[i]] }
+    		current[keys.last()] = updatedValue
+    	
+		}
+		return elasticQuery 
+	}
+
+    static def getElasticResponse(Map requestBody) {
 		def client = new HttpApiClient()
 		def elasticUrl = "http://10.32.23.71:9200"
 		def searchPath = "/_search"
-		
-		HttpApiClient.RequestOptions requestOptions = new HttpApiClient.RequestOptions()
+
+        RequestOptions requestOptions = new RequestOptions()
 		requestOptions.body = requestBody
 
 		def elasticResponse = client.callJsonApi(elasticUrl, searchPath, requestOptions, 'POST')
+		def elasticResults = []
 		if (elasticResponse.success) {
-			return elasticResponse.data?.hits?.hits
+			def hits = elasticResponse.data.hits.hits
+			try {
+				hits.each { hit ->
+				elasticResults << ["id": hit._id, "account_id": hit.account.id, "name": hit._source.name, "used_storage": hit._source.usedStorage, "used_cpu": hit._source.usedCpu, "used_memory": hit._source.usedMemory] 
+				}
+			} catch (Exception e) {
+				log.debug("Failed to construct data from elastic response: ${e}")
+			}
+		} else {
+			log.error("Error getting data from elasticsearch: ${elasticResponse.error ?: elasticResponse.data.errors}")
 		}
+		return elasticResults
 	}
 
 }

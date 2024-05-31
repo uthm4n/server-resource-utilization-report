@@ -20,7 +20,7 @@ apply plugin: 'asset-pipeline'
 apply plugin: 'com.morpheusdata.morpheus-plugin-gradle'
 
 
-group = 'com.uthman'
+group = 'com.morpheusdata.uthman'
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 java {
@@ -38,13 +38,16 @@ configurations {
 }
 
 dependencies {
-	provided "com.morpheusdata:morpheus-plugin-api:$morpheusApiVersion"
-	
-	provided "org.codehaus.groovy:groovy-all:$groovyVersion"
+	implementation "com.morpheusdata:morpheus-plugin-gradle:$morpheusApiVersion"
+	implementation "com.morpheusdata:morpheus-plugin-api:$morpheusApiVersion"
+	provided "org.apache.groovy:groovy-all:$groovyVersion"
 	implementation 'commons-beanutils:commons-beanutils:1.9.3'
 	implementation "org.slf4j:slf4j-api:$slf4jVersion"
 	implementation "org.slf4j:slf4j-parent:$slf4jVersion"
 	implementation 'commons-net:commons-net:3.6'
+	implementation 'org.apache.ivy:ivy:2.5.2'
+	//implementation "org.apache.groovy:groovy-xml:$groovyVersion"
+	implementation 'cglib:cglib-nodep:3.2.12'
 
 	// Include morpheus-core and it's dependencies
 	testImplementation 'io.reactivex.rxjava3:rxjava:3.1.7'
@@ -52,7 +55,7 @@ dependencies {
 	testImplementation 'org.apache.httpcomponents:httpcore:4.4.5'
 	testImplementation "org.slf4j:slf4j-parent:$slf4jVersion"
 
-	testImplementation "org.codehaus.groovy:groovy-all:$groovyVersion"
+	testImplementation "org.apache.groovy:groovy-all:$groovyVersion"
 	testImplementation 'net.bytebuddy:byte-buddy:1.9.3'
 	testImplementation 'org.objenesis:objenesis:2.6'
 	testImplementation platform("org.spockframework:spock-bom:$spockVersion")
@@ -97,14 +100,9 @@ task(console, dependsOn: 'classes', type: JavaExec) {
 	classpath = sourceSets.main.compileClasspath + sourceSets.main.runtimeClasspath
 }
 
-dependencies {
-    testImplementation 'org.spockframework:spock-core:2.0-groovy-3.0'
-    testImplementation 'org.codehaus.groovy:groovy-all:3.0.9'
-}
-
 task groovyConsole(type: JavaExec) {
     main = 'groovy.ui.Console'
-    classpath = sourceSets.main.compileClasspath + sourceSets.test.runtimeClasspath
+    classpath = sourceSets.main.runtimeClasspath + sourceSets.test.runtimeClasspath
 }
 
 test {

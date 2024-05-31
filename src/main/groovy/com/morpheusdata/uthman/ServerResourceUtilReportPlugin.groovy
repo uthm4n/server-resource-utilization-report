@@ -16,6 +16,7 @@
 package com.morpheusdata.uthman
 
 import com.morpheusdata.core.Plugin
+import com.morpheusdata.uthman.datasets.DateTimeDatasetProvider
 
 class ServerResourceUtilReportPlugin extends Plugin {
 
@@ -28,7 +29,7 @@ class ServerResourceUtilReportPlugin extends Plugin {
     void initialize() {
         this.setName("Server Resource Utilization Report Plugin")
         this.registerProvider(new ServerResourceUtilReportProvider(this,this.morpheus))
-        this.registerProvider(new ServerResourceUtilReportDatasetProvider(this, this.morpheus))
+        this.registerProvider(new DateTimeDatasetProvider(this, this.morpheus))
         
     }
 
