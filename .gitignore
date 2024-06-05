@@ -3,4 +3,5 @@ bin
 lib/
 .gradle/
 build/	
+out/
 .DS_STORE/
