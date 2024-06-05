@@ -12,11 +12,11 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class DateTimeDatasetProvider extends AbstractDatasetProvider<Map, String> {
 
-	static timeFilters = [
-		[name:"Now", value:"NOW", dateTime:"${DateTimeUtils.getCurrentDateTime(true)}"],
-		[name:"Last 30 days", value:"30DAYSAGO", dateTime:"${DateTimeUtils.getDateTimeRef("30DAYSAGO")}"],
-		[name:"Last 60 days", value:"60DAYSAGO", dateTime:"${DateTimeUtils.getDateTimeRef("60DAYSAGO")}"],
-        [name:"Last 90 days", value:"90DAYSAGO", dateTime:"${DateTimeUtils.getDateTimeRef("90DAYSAGO")}"]
+	def timeFilters = [
+		[name:"Now", value:"now", dateTime:"${DateTimeUtils.getCurrentDateTime(true)}"],
+		[name:"Last 30 days", value:"now-30d/d", dateTime:"${DateTimeUtils.getDateTimeRef("now-30d/d")}"],
+		[name:"Last 60 days", value:"now-60d/d", dateTime:"${DateTimeUtils.getDateTimeRef("now-60d/d")}"],
+        [name:"Last 90 days", value:"now-90d/d", dateTime:"${DateTimeUtils.getDateTimeRef("now-90d/d")}"]
     ]
 
 	DateTimeDatasetProvider(Plugin plugin, MorpheusContext morpheus) {

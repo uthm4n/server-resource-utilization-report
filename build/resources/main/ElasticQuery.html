@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Elasticsearch Query Dropdowns</title>
+</head>
+<body>
+<h1>Elasticsearch Query with Dropdowns</h1>
+<form id="queryForm">
+    <label for="serverType">Server Type:</label>
+    <select id="serverType">
+        <option value="">Select</option>
+        <option value="Type1">Type1</option>
+        <option value="Type2">Type2</option>
+    </select>
+    <br><br>
+
+    <label for="usedCpu">Used CPU:</label>
+    <select id="usedCpu">
+        <option value="">Select</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+    </select>
+    <br><br>
+
+    <label for="usedMemory">Used Memory:</label>
+    <select id="usedMemory">
+        <option value="">Select</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+    </select>
+    <br><br>
+
+    <label for="usedStorage">Used Storage:</label>
+    <select id="usedStorage">
+        <option value="">Select</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+    </select>
+    <br><br>
+
+    <button type="button" onclick="generateQuery()">Generate Query</button>
+</form>
+
+<h2>Generated Query</h2>
+<pre id="generatedQuery"></pre>
+
+<script>
+    function generateQuery() {
+        const serverType = document.getElementById('serverType').value;
+        const usedCpu = document.getElementById('usedCpu').value;
+        const usedMemory = document.getElementById('usedMemory').value;
+        const usedStorage = document.getElementById('usedStorage').value;
+
+        const filter = [];
+        if (serverType) {
+            filter.push({ "exists": { "field": "serverType" } });
+        }
+        if (usedCpu) {
+            filter.push({ "exists": { "field": "usedCpu" } });
+        }
+        if (usedMemory) {
+            filter.push({ "exists": { "field": "usedMemory" } });
+        }
+        if (usedStorage) {
+            filter.push({ "exists": { "field": "usedStorage" } });
+        }
+
+        const query = {
+            "query": {
+                "bool": {
+                    "must": [],
+                    "filter": [
+                        {
+                            "bool": {
+                                "filter": filter
+                            }
+                        },
+                        {
+                            "range": {
+                                "lastUpdated": {
+                                    "format": "strict_date_optional_time",
+                                    "gte": "2024-04-23",
+                                    "lte": "2024-05-24T23:00:00"
+                                }
+                            }
+                        }
+                    ],
+                    "should": [],
+                    "must_not": []
+                }
+            },
+            "_source": [
+                "_id",
+                "name",
+                "account",
+                "usedCpu",
+                "usedMemory",
+                "usedStorage",
+                "lastStats"
+            ]
+        };
+
+        document.getElementById('generatedQuery').textContent = JSON.stringify(query, null, 2);
+    }
+</script>
+</body>
+</html>

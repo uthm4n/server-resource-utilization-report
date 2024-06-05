@@ -1,0 +1,40 @@
+<div class="server-resource-utilization-report">
+   <title>Server Resource Utilization Report</title>
+   <script nonce="{{webnonce}}" type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+   <script nonce="{{webnonce}}" type="text/javascript">
+      google.charts.load('current', {'packages':['table']});
+      google.charts.setOnLoadCallback(drawTable);
+      
+      function drawTable() {
+          var inputData = '{{ reportdata.header.0.dataMap }}'
+          data = inputData.replace(/&quot;/g, '"')
+          var results = JSON.parse(data)
+          
+          var data = new google.visualization.DataTable();
+          data.addColumn('string', 'account_id');
+          data.addColumn('string', 'id');
+          data.addColumn('string', 'name');
+          data.addColumn('string', 'used_storage');
+          data.addColumn('string', 'used_cpu');
+          data.addColumn('string', 'used_memory');
+          
+          for (var i = 0; i<results.length; i++){
+              data.addRow([results[i]['account']['id'], results[i]['_id'], results[i]['_source']['name'], results[i]['_source']['usedStorage'], results[i]['_source']['usedCpu'], results[i]['_source']['usedMemory']]);
+          }
+          var table = new google.visualization.Table(document.getElementById('resource-usage-table'));
+      
+          table.draw(data, {showRowNumber: false, width: '50%', height: '100%'});
+      }
+   </script>
+   <style>
+      /* Add your CSS styles here */
+      .server-resource-utilization-report {
+      text-align: center;
+      }
+   </style>
+   <div class="resource-usage">
+      <h2>Results Table</h2>
+      <div id="resource-usage-table"></div>
+   </div>
+</div>
+</div>

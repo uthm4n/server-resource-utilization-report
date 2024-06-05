@@ -5,20 +5,16 @@ import com.morpheusdata.core.Plugin
 import com.morpheusdata.core.data.DatasetInfo
 import com.morpheusdata.core.data.DatasetQuery
 import com.morpheusdata.core.providers.AbstractDatasetProvider
+import com.morpheusdata.uthman.util.ElasticsearchUtils
 import io.reactivex.rxjava3.core.Observable
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class ElasticSearchQueryDatasetProvider extends AbstractDatasetProvider<Map, String> {
+class ElasticQueryDatasetProvider extends AbstractDatasetProvider<Map, String> {
 
-	static timeFilters = [
-		[name:"Now", value:"NOW"],
-		[name:"Last 30 days", value:"30DAYS"],
-		[name:"Last 60 days", value:"60DAYS"],
-        [name:"Last 90 days", value:"90DAYS"]
-    ]
+	def elasticQuery = ElasticsearchUtils.getQuery(true)
 
-	ElasticSearchQueryDatasetProvider(Plugin plugin, MorpheusContext morpheus) {
+	ElasticQueryDatasetProvider(Plugin plugin, MorpheusContext morpheus) {
 		this.plugin = plugin
 		this.morpheusContext = morpheus
 	}
@@ -28,7 +24,7 @@ class ElasticSearchQueryDatasetProvider extends AbstractDatasetProvider<Map, Str
 		new DatasetInfo(
 			name: 'Elasticsearch query request and response data for the Server Resource Utilization Report',
 			namespace: 'serverResourceUtilReport',
-			key: 'elasticQueryView',
+			key: 'elasticQuery',
 			description: 'Better visibility over the elasticsearch query data used to populate the Server Resource Utilization Report'
 		)
 	}
@@ -43,11 +39,11 @@ class ElasticSearchQueryDatasetProvider extends AbstractDatasetProvider<Map, Str
 	}
 
 	Observable<Map> list(DatasetQuery query) {
-		return Observable.fromIterable(timeFilters)
+		return Observable.fromIterable(elasticQuery)
 	}
 
 	Observable<Map> listOptions(DatasetQuery query) {
-		return Observable.fromIterable(timeFilters)
+		return Observable.fromIterable(elasticQuery)
 	}
 
 	Map fetchItem(Object value) {
@@ -64,7 +60,7 @@ class ElasticSearchQueryDatasetProvider extends AbstractDatasetProvider<Map, Str
 	}
 
 	Map item(String value) {
-		def rtn = timeFilters.find{ it.value == value }
+		def rtn = elasticQuery.find{ it.value == value }
 		return rtn
 	}
 

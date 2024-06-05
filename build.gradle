@@ -40,22 +40,23 @@ configurations {
 dependencies {
 	implementation "com.morpheusdata:morpheus-plugin-gradle:$morpheusApiVersion"
 	implementation "com.morpheusdata:morpheus-plugin-api:$morpheusApiVersion"
-	provided "org.apache.groovy:groovy-all:$groovyVersion"
-	implementation 'commons-beanutils:commons-beanutils:1.9.3'
+	provided "org.codehaus.groovy:groovy:$groovyVersion"
+	implementation "org.elasticsearch.client:elasticsearch-rest-client:8.11.4"
+	implementation 'commons-beanutils:commons-beanutils:1.9.4'
 	implementation "org.slf4j:slf4j-api:$slf4jVersion"
 	implementation "org.slf4j:slf4j-parent:$slf4jVersion"
-	implementation 'commons-net:commons-net:3.6'
+	implementation 'commons-net:commons-net:3.9.0'
 	implementation 'org.apache.ivy:ivy:2.5.2'
-	//implementation "org.apache.groovy:groovy-xml:$groovyVersion"
+	implementation "org.spockframework:spock-bom:$spockVersion"
+	implementation "org.codehaus.groovy:groovy-json:$groovyVersion"
 	implementation 'cglib:cglib-nodep:3.2.12'
 
 	// Include morpheus-core and it's dependencies
 	testImplementation 'io.reactivex.rxjava3:rxjava:3.1.7'
-	testImplementation 'org.apache.httpcomponents:httpclient:4.5.3'
+	testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
 	testImplementation 'org.apache.httpcomponents:httpcore:4.4.5'
 	testImplementation "org.slf4j:slf4j-parent:$slf4jVersion"
 
-	testImplementation "org.apache.groovy:groovy-all:$groovyVersion"
 	testImplementation 'net.bytebuddy:byte-buddy:1.9.3'
 	testImplementation 'org.objenesis:objenesis:2.6'
 	testImplementation platform("org.spockframework:spock-bom:$spockVersion")
@@ -95,14 +96,15 @@ assets {
 }
 
 
-task(console, dependsOn: 'classes', type: JavaExec) {
+tasks.register('console', JavaExec) {
+	dependsOn 'classes'
 	main = 'groovy.ui.Console'
 	classpath = sourceSets.main.compileClasspath + sourceSets.main.runtimeClasspath
 }
 
-task groovyConsole(type: JavaExec) {
-    main = 'groovy.ui.Console'
-    classpath = sourceSets.main.runtimeClasspath + sourceSets.test.runtimeClasspath
+tasks.register('groovyConsole', JavaExec) {
+	main = 'groovy.ui.Console'
+	classpath = sourceSets.main.runtimeClasspath + sourceSets.test.runtimeClasspath
 }
 
 test {

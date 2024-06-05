@@ -1,6 +1,8 @@
-package com.morpheusdata.uthman
+package groovy.com.morpheusdata.uthman
 
 import com.morpheusdata.core.MorpheusContext
+import com.morpheusdata.uthman.ServerResourceUtilReportPlugin
+import com.morpheusdata.uthman.ServerResourceUtilReportProvider
 import com.morpheusdata.uthman.util.DateTimeUtils
 import spock.lang.Specification
 import spock.lang.Subject
